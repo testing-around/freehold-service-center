@@ -1,6 +1,7 @@
 # dependencies
 node_modules/
 node_modules_old/
+node_modules_tmp*/
 .node_modules.lock
 
 # build output
