@@ -156,6 +156,12 @@ export default defineConfig(({ command, isPreview }) => ({
     port: 8081,
     strictPort: true,
   },
+  build: {
+    // Inline asset imports (the PGlite initdb.wasm under ~400 KB) as data URLs
+    // so they work inside the Cloudflare Pages worker bundle, where assets
+    // can't be fetched relative to import.meta.url.
+    assetsInlineLimit: 1024 * 1024,
+  },
   resolve: { tsconfigPaths: true },
   plugins: [
     pgliteBootstrapPlugin(),

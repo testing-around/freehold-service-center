@@ -1,5 +1,13 @@
 import { pendingMigrations } from "../../scripts/migration-plan.mjs";
 
+// initdb.wasm, imported as an asset URL (`?url`). In production builds
+// `assetsInlineLimit` inlines it as a data URL so the bytes ship inside the
+// worker bundle — PGlite's own loader resolves the wasm relative to
+// `import.meta.url`, which is not fetchable inside the Cloudflare Pages
+// worker. In dev the import stays a URL path and PGlite's node loader handles
+// the wasm itself (see `loadInitdbWasmModule`).
+import initdbWasmDataUrl from "./initdb.wasm?url";
+
 /** Which database backend is active. */
 export type DbSource = "neon" | "pglite";
 
@@ -105,6 +113,26 @@ function createNeonSql(): Promise<Sql> {
   return globalRef.__pgSqlPromise__;
 }
 
+function decodeDataUrlBase64(dataUrl: string): Uint8Array<ArrayBuffer> {
+  const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
+  const bin = atob(base64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+let initdbModulePromise: Promise<WebAssembly.Module | undefined> | undefined;
+function loadInitdbWasmModule(): Promise<WebAssembly.Module | undefined> {
+  initdbModulePromise ??= (async () => {
+    // Production builds inline the wasm (data URL): decode and compile it so the
+    // module works inside the Cloudflare Pages worker. In dev the import stays
+    // a URL path and PGlite's own node loader handles the wasm — pass nothing.
+    if (!initdbWasmDataUrl.startsWith("data:")) return undefined;
+    return WebAssembly.compile(decodeDataUrlBase64(initdbWasmDataUrl));
+  })();
+  return initdbModulePromise;
+}
+
 async function createPgliteSql(): Promise<Sql> {
   // Embedded Postgres, imported on demand so it never loads on the Neon path.
   // One in-memory instance per process, shared across HMR module instances, so
@@ -112,6 +140,7 @@ async function createPgliteSql(): Promise<Sql> {
   globalRef.__pgliteInstance__ ??= (async () => {
     const { PGlite } = await import("@electric-sql/pglite");
     const pg = new PGlite({
+      initdbWasmModule: await loadInitdbWasmModule(),
       parsers: {
         [OID_INT8]: Number,
         [OID_DATE]: identity,
@@ -176,6 +205,12 @@ async function createSql(): Promise<Sql> {
         "or a server route loader, never from client code.",
     );
   }
+  if (import.meta.env.PROD && dbSource === "pglite") {
+    throw new Error(
+      "Online requests are temporarily unavailable. Please call the shop. " +
+        "The server requires a production DATABASE_URL.",
+    );
+  }
   return dbSource === "neon" ? createNeonSql() : createPgliteSql();
 }
 
@@ -220,7 +255,7 @@ export async function getPglite(): Promise<import("@electric-sql/pglite").PGlite
  * module kick it off immediately (see bottom of file).
  */
 export function ensureDbReady(): Promise<void> {
-  if (dbSource !== "pglite") return Promise.resolve();
+  if (import.meta.env.PROD || dbSource !== "pglite") return Promise.resolve();
   return getSql().then(() => undefined);
 }
 
@@ -229,10 +264,13 @@ export function ensureDbReady(): Promise<void> {
 const globalBoot = globalThis as typeof globalThis & {
   __pgBootstrapPromise__?: Promise<void>;
 };
-if (typeof window === "undefined" && dbSource === "pglite") {
+if (import.meta.env.DEV && typeof window === "undefined" && dbSource === "pglite") {
   globalBoot.__pgBootstrapPromise__ ??= ensureDbReady().catch((err) => {
     globalBoot.__pgBootstrapPromise__ = undefined;
+    // Log, don't re-throw: an unhandled rejection inside a Cloudflare Pages
+    // worker poisons the isolate and turns every request (including pages
+    // that never touch the DB) into a 500. DB-backed routes surface the
+    // error themselves when they await the failed instance promise.
     console.error("[db] PGLite bootstrap failed:", err);
-    throw err;
   });
 }
