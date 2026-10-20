@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Phone, MapPin } from "lucide-react";
 import { AUTO_REPAIR_SERVICE_AREA, CLIPS, SERVICES, SHOP } from "@/data/shop";
 import CarBrandMarquee from "@/components/CarBrandMarquee";
-import { Booking } from "@/components/booking";
+import { CallbackRequest as Booking } from "@/components/callback-request";
 import { IntroFilm } from "@/components/intro-film";
 import {
   customerMessage,
