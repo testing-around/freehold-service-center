@@ -1,5 +1,6 @@
 {
   "title": "Freehold Service Center",
   "card": "custom",
-  "color": "0C2340"
+  "color": "0C2340",
+  "icon": "/icons/shop-180.png"
 }

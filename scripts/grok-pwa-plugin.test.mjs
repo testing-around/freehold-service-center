@@ -539,3 +539,14 @@ test("vite plugin bakes og identity as a virtual module", () => {
   assert.match(plugin, /snapshotOgIdentity/);
 });
 
+
+test("custom-domain install metadata uses the shop identity instead of the template default", () => {
+  const site = { title: "Freehold Service Center", icon: "/icons/shop-180.png" };
+  const manifest = JSON.parse(renderWebManifest("freeholdrepairshop.com", site));
+  assert.equal(manifest.name, site.title);
+  assert.equal(manifest.short_name, site.title);
+  assert.equal(manifest.icons[0].src, site.icon);
+  const html = renderInstallPage("freeholdrepairshop.com", "/?install=1&platform=ios", site);
+  assert.match(html, /Add Freehold Service Center/);
+  assert.match(html, /href="\/icons\/shop-180\.png"/);
+});
