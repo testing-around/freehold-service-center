@@ -274,7 +274,7 @@ function Home() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-bg/70 to-bg" />
           </div>
           <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-2">
-            <div className="reveal" data-reveal>
+            <div className="reveal glass rounded-lg border border-line p-5 sm:p-6" data-reveal>
               <p className="text-sm font-semibold tracking-wide text-primary uppercase">The shop</p>
               <h2 className="display mt-2 text-5xl sm:text-6xl">63 East Main.</h2>
               <p className="mt-3 text-base text-muted">

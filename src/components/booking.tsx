@@ -453,7 +453,7 @@ export function Booking() {
                   className={`min-h-14 rounded-md border px-3 text-left ${draft.reach === item.id ? "border-primary bg-primary text-bg" : "border-line bg-bg"}`}
                 >
                   <span className="block text-sm font-semibold">{item.label}</span>
-                  <span className={`text-xs ${draft.reach === item.id ? "text-bg/80" : "text-muted"}`}>{item.hint}</span>
+                  <span className={`text-xs ${draft.reach === item.id ? "text-bg" : "text-muted"}`}>{item.hint}</span>
                 </button>
               ))}
             </div>
