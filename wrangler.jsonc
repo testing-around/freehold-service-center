@@ -1,0 +1,5 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "freehold-service-center",
+  "compatibility_date": "2025-01-01"
+}

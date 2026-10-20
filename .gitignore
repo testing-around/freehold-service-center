@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+.node_modules.lock
+
+# build output
+dist/
+
+# local platform / sandbox state
+.backup/
+.tanstack/
+.vercel/
+.wrangler/
+.project_id
+buildlog.txt
+screenshots/
+artifacts/
+
+# grok workspace chrome — keep only app-env.json (carries VITE_AUTH_ENABLED)
+.grok/*
+!.grok/app-env.json
