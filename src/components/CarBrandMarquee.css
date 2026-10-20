@@ -139,3 +139,13 @@
     display: none;
   }
 }
+
+.ffc-brand-logo {
+  display: block;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 32px;
+  object-fit: contain;
+  background: var(--color-surface);
+  border-radius: 4px;
+}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { MARQUEE_BRANDS } from "@/data/shop";
+import { BRAND_LOGOS } from "@/data/brand-logos";
 import "./CarBrandMarquee.css";
 
 export default function CarBrandMarquee() {
@@ -23,13 +24,19 @@ export default function CarBrandMarquee() {
   }, []);
 
   const renderBrands = (duplicate: boolean) => (
-    <div
-      className="ffc-brand-group"
-      ref={duplicate ? undefined : groupRef}
-      aria-hidden={duplicate}
-    >
+    <div className="ffc-brand-group" ref={duplicate ? undefined : groupRef} aria-hidden={duplicate}>
       {MARQUEE_BRANDS.map((brand) => (
         <span className="ffc-brand-name" key={`${duplicate ? "duplicate-" : "primary-"}${brand}`}>
+          {BRAND_LOGOS[brand] ? (
+            <img
+              className="ffc-brand-logo"
+              src={BRAND_LOGOS[brand]}
+              alt=""
+              width={48}
+              height={32}
+              decoding="async"
+            />
+          ) : null}
           {brand}
         </span>
       ))}
